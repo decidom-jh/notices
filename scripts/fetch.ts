@@ -9,9 +9,13 @@ const env = (n: string) => Deno.env.get(n) ?? "";
 /** 한국 날짜 */
 const today = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
 
-async function getJson(url: string): Promise<unknown> {
+/** 한 번 더 해 봐요 (해외 서버에서 기업마당이 느릴 때가 있어요) */
+async function getJson(url: string, ms = TIMEOUT_MS): Promise<unknown> {
+  return (await getOnce(url, ms)) ?? (await getOnce(url, ms));
+}
+async function getOnce(url: string, ms: number): Promise<unknown> {
   const c = new AbortController();
-  const t = setTimeout(() => c.abort(), TIMEOUT_MS);
+  const t = setTimeout(() => c.abort(), ms);
   try {
     const r = await fetch(url, { signal: c.signal });
     if (!r.ok) {
@@ -44,19 +48,36 @@ async function save<T>(name: string, list: T[] | null, note?: string) {
   status[name] = { ok: true, count: list.length };
 }
 
+/** 지난 파일 (없으면 빈 목록) */
+async function last<T>(name: string): Promise<T[]> {
+  try {
+    return JSON.parse(await Deno.readTextFile(new URL(`${name}.json`, OUT))) as T[];
+  } catch {
+    return [];
+  }
+}
+
+/** 지원사업: 곳마다 따로 지켜요. 한 곳이 실패하면 그곳은 지난 목록(마감 안 지난 것)을 그대로 써요 */
 async function support(): Promise<Support[] | null> {
   const dk = env("DATA_GO_KR_KEY");
   const bk = env("BIZINFO_KEY");
   if (!dk && !bk) return null;
+  const prev = await last<Support>("support");
+  const keep = (src: Support["source"], got: Support[]) => {
+    if (got.length) return got;
+    const old = prev.filter((n) => n.source === src);
+    status[`support:${src}`] = { ok: false, count: old.length, note: "받기 실패, 지난 목록 그대로" };
+    return old;
+  };
   const out: Support[] = [];
   if (bk) {
     console.log("기업마당…");
-    out.push(...bizinfoRows(await getJson(`https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=${encodeURIComponent(bk)}&dataType=json&searchCnt=3000`)));
+    out.push(...keep("bizinfo", bizinfoRows(await getJson(`https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=${encodeURIComponent(bk)}&dataType=json&searchCnt=3000`, 60000))));
   }
   if (dk) {
     console.log("K-Startup…");
     const pages = await Promise.all([1, 2, 3].map((p) => getJson(`https://apis.data.go.kr/B552735/kisedKstartupService01/getAnnouncementInformation01?serviceKey=${encodeURIComponent(dk)}&page=${p}&perPage=500&returnType=json&cond[rcrt_prgs_yn::EQ]=Y`)));
-    out.push(...kstartupRows(pages));
+    out.push(...keep("kstartup", kstartupRows(pages)));
   }
   return keepOpen(out, today).sort((a, b) => (a.end ?? "9999").localeCompare(b.end ?? "9999"));
 }
