@@ -18,6 +18,8 @@ export type Support = {
   /** 접수 시작·마감 (YYYY-MM-DD, 모르면 null) */
   start: string | null;
   end: string | null;
+  /** 날짜가 아닌 접수 기간 글 (예산 소진시까지, 상시 접수 …). 날짜가 있으면 빈 글 */
+  period: string;
   url: string;
 };
 
@@ -111,6 +113,7 @@ export function bizinfoRows(data: unknown): Support[] {
         regions: regionsOf(String(r.hashtags ?? "").split(",")),
         start: day(a),
         end: day(b),
+        period: day(a) || day(b) ? "" : strip(range).slice(0, 40),
         url: r.pblancUrl ?? "",
       };
     })
@@ -134,6 +137,7 @@ export function kstartupRows(pages: unknown[]): Support[] {
       regions: regionsOf(String(r.supt_regin ?? "").split(/[,\s]+/)),
       start: day(r.pbanc_rcpt_bgng_dt),
       end: day(r.pbanc_rcpt_end_dt),
+      period: "",
       url: r.detl_pg_url || `https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=view&pbancSn=${r.pbanc_sn}`,
     }))
     .filter((n) => n.title && !n.id.endsWith(":undefined"));

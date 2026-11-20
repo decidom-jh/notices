@@ -51,7 +51,7 @@ async function support(): Promise<Support[] | null> {
   const out: Support[] = [];
   if (bk) {
     console.log("기업마당…");
-    out.push(...bizinfoRows(await getJson(`https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=${encodeURIComponent(bk)}&dataType=json&searchCnt=1000`)));
+    out.push(...bizinfoRows(await getJson(`https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do?crtfcKey=${encodeURIComponent(bk)}&dataType=json&searchCnt=3000`)));
   }
   if (dk) {
     console.log("K-Startup…");
