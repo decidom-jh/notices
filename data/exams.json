@@ -81,22 +81,6 @@
  },
  {
   "year": 2026,
-  "name": "국가기술자격 기능사 (2026년도 제37회)",
-  "written": {
-   "applyStart": "2026-11-17",
-   "applyEnd": "2026-11-17",
-   "exam": "2026-11-23",
-   "pass": "2026-11-23"
-  },
-  "practical": {
-   "applyStart": null,
-   "applyEnd": null,
-   "exam": null,
-   "pass": null
-  }
- },
- {
-  "year": 2026,
   "name": "국가기술자격 기능사 (2026년도 제4회)",
   "written": {
    "applyStart": "2026-09-10",

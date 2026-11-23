@@ -1,10 +1,10 @@
 {
- "ran": "2026-11-22T21:29:36.916Z",
- "today": "2026-11-23",
+ "ran": "2026-11-23T21:38:41.774Z",
+ "today": "2026-11-24",
  "sources": {
   "support": {
    "ok": true,
-   "count": 1466
+   "count": 1452
   },
   "services": {
    "ok": true,
@@ -12,7 +12,7 @@
   },
   "exams": {
    "ok": true,
-   "count": 15
+   "count": 14
   }
  }
 }
